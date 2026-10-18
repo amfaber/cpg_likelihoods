@@ -563,9 +563,7 @@ impl FilterState {
     pub fn parse(raw: &str) -> Result<Self, String> {
         let normalized = raw
             .trim()
-            .replace(' ', "_")
-            .replace('-', "_")
-            .replace('/', "_")
+            .replace([' ', '-', '/'], "_")
             .to_ascii_lowercase();
 
         match normalized.as_str() {
