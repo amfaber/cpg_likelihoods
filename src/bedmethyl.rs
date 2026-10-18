@@ -1,0 +1,82 @@
+use crate::Site;
+
+pub const BED_COLUMNS: usize = 18;
+pub const ANNOTATED_COLUMNS: usize = 21;
+
+/// A modkit bedMethyl row. Writers normalize the parsed fields to tabs.
+pub struct BedMethylRecord<'a> {
+    pub fields: Vec<&'a str>,
+    pub site: Site,
+}
+
+impl<'a> BedMethylRecord<'a> {
+    /// Blank lines, comments, browser directives, and column headers return None.
+    /// Invalid data returns an error rather than looking like a skipped comment.
+    pub fn parse(line: &'a str) -> Result<Option<Self>, String> {
+        let line = line.trim();
+        if line.is_empty()
+            || line.starts_with('#')
+            || line.starts_with("track ")
+            || line.starts_with("browser ")
+        {
+            return Ok(None);
+        }
+        let fields: Vec<_> = line.split_ascii_whitespace().collect();
+        if fields.first() == Some(&"chrom")
+            && matches!(fields.get(1), Some(&"start" | &"chromStart"))
+        {
+            return Ok(None);
+        }
+        if fields.len() < BED_COLUMNS {
+            return Err(format!(
+                "expected at least {BED_COLUMNS} bedMethyl columns, found {}",
+                fields.len()
+            ));
+        }
+        let parse_count = |index: usize, name: &str| -> Result<u64, String> {
+            fields
+                .get(index)
+                .ok_or_else(|| format!("missing {name}"))?
+                .parse()
+                .map_err(|_| {
+                    format!(
+                        "column {} ({name}): expected an unsigned integer, found '{}'",
+                        index + 1,
+                        fields[index]
+                    )
+                })
+        };
+        let cov = parse_count(4, "coverage")?;
+        let deleted = parse_count(14, "N_delete")?;
+        let different = parse_count(16, "N_diff")?;
+        let no_call = parse_count(17, "N_nocall")?;
+        let d = deleted
+            .checked_add(different)
+            .and_then(|d| d.checked_add(no_call))
+            .ok_or_else(|| "non-CpG counts exceed u64 range".to_owned())?;
+        Ok(Some(Self {
+            fields,
+            site: Site { cov, d },
+        }))
+    }
+
+    pub fn pl(&self) -> Result<[u32; 3], String> {
+        if self.fields.len() < ANNOTATED_COLUMNS {
+            return Err(format!(
+                "expected at least {ANNOTATED_COLUMNS} PL-annotated columns, found {}",
+                self.fields.len()
+            ));
+        }
+        let mut pl = [0; 3];
+        for (i, value) in pl.iter_mut().enumerate() {
+            *value = self.fields[18 + i].parse().map_err(|_| {
+                format!(
+                    "column {} (PL): expected an unsigned 32-bit integer, found '{}'",
+                    19 + i,
+                    self.fields[18 + i]
+                )
+            })?;
+        }
+        Ok(pl)
+    }
+}
