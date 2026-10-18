@@ -95,6 +95,21 @@ cargo run -- estimate-error input.bedMethyl
 
 ## Quickstart 
 
+### Downloadable builds
+
+The **Build downloadable binaries** GitHub Actions workflow builds and tests Linux
+(x86-64, Ubuntu 22.04 or newer), macOS (Intel and Apple Silicon), and Windows
+(x86-64) executables. Run it manually from the Actions tab, or push a version tag
+matching `Cargo.toml`, such as `v0.1.0`. A mismatched version tag fails the build.
+Manual dispatch becomes available once the workflow is on the default branch.
+
+Download the archive for your platform from the successful workflow run's
+**Artifacts** section and extract it. Each archive contains the executable and
+this README. Artifacts are retained for 30 days; these builds do not create a
+GitHub Release. On Linux/macOS the tar archive preserves the executable bit.
+
+### Run the workflow locally
+
 ```bash
 #Estimate the CpG-to-non-CpG error rate: 
 cargo run -- estimate-error input.bedMethyl
