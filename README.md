@@ -126,7 +126,11 @@ cargo run -- filter output.bedMethyl --out filtered.bedMethyl --state CpG_hom/he
 
 ## Detailed usage 
 
-Input uses the 18-column modkit bedMethyl schema. Both tab-only and mixed
+Input uses exactly the 18-column modkit bedMethyl schema. Annotated input to
+summary/filter has exactly 21 columns, with `PL_hom_cpg`, `PL_het_cpg`, and
+`PL_non_cpg` appended in that order. Reannotation and extra columns are rejected.
+Column headers are updated when PL columns are added or removed; other metadata
+is preserved. Both tab-only and mixed
 tab/space delimiters are accepted; generated data rows use tabs. Blank lines,
 `#` comments, BED `track`/`browser` directives, and recognized column headers
 are treated as metadata. Malformed data stops processing with the input path,

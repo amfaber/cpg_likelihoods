@@ -2,6 +2,65 @@ use crate::Site;
 
 pub const BED_COLUMNS: usize = 18;
 pub const ANNOTATED_COLUMNS: usize = 21;
+const PL_NAMES: [&str; 3] = ["PL_hom_cpg", "PL_het_cpg", "PL_non_cpg"];
+
+fn header_fields(line: &str) -> Option<(bool, Vec<&str>)> {
+    let line = line.trim();
+    let commented = line.starts_with('#');
+    let fields: Vec<_> = line
+        .strip_prefix('#')
+        .unwrap_or(line)
+        .split_ascii_whitespace()
+        .collect();
+    if fields.first() == Some(&"chrom") && matches!(fields.get(1), Some(&"start" | &"chromStart")) {
+        Some((commented, fields))
+    } else {
+        None
+    }
+}
+
+fn require_columns(actual: usize, expected: usize) -> Result<(), String> {
+    if actual != expected {
+        Err(format!(
+            "expected exactly {expected} columns, found {actual}"
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+pub(crate) fn append_pl_header(line: &str) -> Result<String, String> {
+    let Some((commented, mut fields)) = header_fields(line) else {
+        return Ok(line.to_owned());
+    };
+    require_columns(fields.len(), BED_COLUMNS)?;
+    fields.extend(PL_NAMES);
+    Ok(format!(
+        "{}{}",
+        if commented { "#" } else { "" },
+        fields.join("\t")
+    ))
+}
+
+pub(crate) fn filter_pl_header(line: &str, keep_pl: bool) -> Result<String, String> {
+    let Some((commented, mut fields)) = header_fields(line) else {
+        return Ok(line.to_owned());
+    };
+    require_columns(fields.len(), ANNOTATED_COLUMNS)?;
+    if fields[BED_COLUMNS..] != PL_NAMES {
+        return Err(
+            "expected PL_hom_cpg, PL_het_cpg, PL_non_cpg as header columns 19-21".to_owned(),
+        );
+    }
+    if !keep_pl {
+        fields.truncate(BED_COLUMNS);
+    }
+    Ok(format!(
+        "{}{}",
+        if commented { "#" } else { "" },
+        fields.join("\t")
+    ))
+}
 
 /// A modkit bedMethyl row. Writers normalize the parsed fields to tabs.
 pub struct BedMethylRecord<'a> {
@@ -22,9 +81,7 @@ impl<'a> BedMethylRecord<'a> {
             return Ok(None);
         }
         let fields: Vec<_> = line.split_ascii_whitespace().collect();
-        if fields.first() == Some(&"chrom")
-            && matches!(fields.get(1), Some(&"start" | &"chromStart"))
-        {
+        if header_fields(line).is_some() {
             return Ok(None);
         }
         if fields.len() < BED_COLUMNS {
@@ -61,12 +118,7 @@ impl<'a> BedMethylRecord<'a> {
     }
 
     pub fn pl(&self) -> Result<[u32; 3], String> {
-        if self.fields.len() < ANNOTATED_COLUMNS {
-            return Err(format!(
-                "expected at least {ANNOTATED_COLUMNS} PL-annotated columns, found {}",
-                self.fields.len()
-            ));
-        }
+        self.require_columns(ANNOTATED_COLUMNS)?;
         let mut pl = [0; 3];
         for (i, value) in pl.iter_mut().enumerate() {
             *value = self.fields[18 + i].parse().map_err(|_| {
@@ -78,5 +130,9 @@ impl<'a> BedMethylRecord<'a> {
             })?;
         }
         Ok(pl)
+    }
+
+    pub fn require_columns(&self, expected: usize) -> Result<(), String> {
+        require_columns(self.fields.len(), expected)
     }
 }
