@@ -34,7 +34,7 @@ pub enum Command {
         e_c2n: Option<f64>,
         #[command(flatten)]
         estimation: EstimationArgs,
-        /// Common scaling factor in the likelihood model
+        /// Common likelihood scale factor (does not affect PLs)
         #[arg(long, default_value_t = 2.0)]
         n: f64,
     },
