@@ -1,5 +1,7 @@
 use clap::{Args, Parser, Subcommand};
-use cpg_likelihoods::FilterState;
+use cpg_likelihoods::{
+    FilterState, append_pl_columns, estimate_error_c2n_from_bedmethyl, filter_bedmethyl_by_state,
+};
 use std::path::PathBuf;
 
 #[derive(Debug, Parser)]
@@ -28,12 +30,36 @@ pub enum Command {
     FilterLikelihoods(FilterLikelihoodsArgs),
 }
 
+impl Command {
+    pub fn run(self) -> Result<(), Box<dyn std::error::Error>> {
+        match self {
+            Self::ErrorC2n(args) => args.run(),
+            Self::Likelihoods(args) => args.run(),
+            Self::SummarizeLikelihoods(args) => args.run(),
+            Self::FilterLikelihoods(args) => args.run(),
+        }
+    }
+}
+
 #[derive(Debug, Args)]
 pub struct ErrorC2nArgs {
     /// Input bedMethyl file (plain, gzip, or BGZF)
     pub input: PathBuf,
     #[command(flatten)]
     pub estimation: EstimationArgs,
+}
+
+impl ErrorC2nArgs {
+    pub fn run(self) -> Result<(), Box<dyn std::error::Error>> {
+        let e = estimate_error_c2n_from_bedmethyl(
+            &self.input,
+            self.estimation.min_cov,
+            self.estimation.max_cov,
+            self.estimation.min_ratio,
+        )?;
+        println!("{e:.10}");
+        Ok(())
+    }
 }
 
 #[derive(Debug, Args)]
@@ -53,11 +79,44 @@ pub struct LikelihoodsArgs {
     pub n: f64,
 }
 
+impl LikelihoodsArgs {
+    pub fn run(self) -> Result<(), Box<dyn std::error::Error>> {
+        let e = match self.e_c2n {
+            Some(e) => {
+                if !(0.0..=1.0).contains(&e) {
+                    return Err("e_c2n must be between 0 and 1".into());
+                }
+                eprintln!("Using manual e_c2n = {e:.10}");
+                e
+            }
+            None => {
+                let e = estimate_error_c2n_from_bedmethyl(
+                    &self.input,
+                    self.estimation.min_cov,
+                    self.estimation.max_cov,
+                    self.estimation.min_ratio,
+                )?;
+                eprintln!("Estimated e_c2n = {e:.10}");
+                e
+            }
+        };
+        append_pl_columns(&self.input, &self.out, e, self.n)?;
+        eprintln!("Wrote: {}", self.out.display());
+        Ok(())
+    }
+}
+
 #[derive(Debug, Args)]
 pub struct SummarizeLikelihoodsArgs {
     pub input: PathBuf,
     #[arg(long, default_value_t = 20)]
     pub min_gq: u32,
+}
+
+impl SummarizeLikelihoodsArgs {
+    pub fn run(self) -> Result<(), Box<dyn std::error::Error>> {
+        crate::summarize_likelihoods::run(&self.input, self.min_gq)
+    }
 }
 
 #[derive(Debug, Args)]
@@ -74,6 +133,18 @@ pub struct FilterLikelihoodsArgs {
     /// Retain the three PL columns in the output
     #[arg(long)]
     pub keep_pl: bool,
+}
+
+impl FilterLikelihoodsArgs {
+    pub fn run(self) -> Result<(), Box<dyn std::error::Error>> {
+        filter_bedmethyl_by_state(
+            &self.input_bed,
+            &self.output_bed,
+            self.state,
+            self.min_gq,
+            self.keep_pl,
+        )
+    }
 }
 
 #[derive(Debug, Args)]

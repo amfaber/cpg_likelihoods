@@ -8,8 +8,9 @@ easy to see in later diffs.
 
 ## Read the code in layers
 
-- `src/cli.rs` describes command-line arguments using clap's derive macros.
-- `src/main.rs` dispatches the selected command; `src/summarize_likelihoods.rs` prints reports.
+- `src/cli.rs` defines clap arguments and each subcommand's `run` method.
+- `src/main.rs` parses the CLI and delegates to the selected command.
+- `src/summarize_likelihoods.rs` prints summary reports.
 - `src/bedmethyl.rs` parses records and maintains the column/header contract.
 - `src/lib.rs` contains compression, safe output handling, and the statistical
   operations. The library can be tested without launching the command-line app.
