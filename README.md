@@ -101,10 +101,10 @@ Download the executable for your platform from
 [GitHub Releases](https://github.com/amfaber/cpg_likelihoods/releases).
 Release assets are raw executables, without ZIP or tar wrappers:
 
-- `cpg-likelihoods-v0.1.0-x86_64-pc-windows-msvc.exe`
-- `cpg-likelihoods-v0.1.0-x86_64-unknown-linux-gnu`
-- `cpg-likelihoods-v0.1.0-x86_64-apple-darwin`
-- `cpg-likelihoods-v0.1.0-aarch64-apple-darwin`
+- `cpg-likelihoods-v0.1.1-x86_64-pc-windows-msvc.exe`
+- `cpg-likelihoods-v0.1.1-x86_64-unknown-linux-gnu`
+- `cpg-likelihoods-v0.1.1-x86_64-apple-darwin`
+- `cpg-likelihoods-v0.1.1-aarch64-apple-darwin`
 
 The README is a separate release asset, shared by all platforms. On Linux/macOS,
 mark a manually downloaded executable as executable with `chmod +x <filename>`
@@ -118,8 +118,8 @@ cargo binstall --git https://github.com/amfaber/cpg_likelihoods cpg_likelihoods
 cpg-likelihoods --help
 ```
 
-`--git` reads the manifest from this repository instead of crates.io. From a
-local checkout, use `cargo binstall --manifest-path Cargo.toml cpg_likelihoods`.
+`--git` reads the manifest from this repository instead of crates.io. For a
+local checkout, pass the absolute path of `Cargo.toml` with `--manifest-path`.
 The package is named `cpg_likelihoods`; the installed executable is named
 `cpg-likelihoods`. The manifest's binstall metadata maps each Rust target to its
 raw executable (`pkg-fmt = "bin"`). Plain `cargo binstall cpg_likelihoods`
@@ -128,7 +128,7 @@ requires this package/version and its metadata to be published on crates.io.
 The **Publish release binaries** Actions workflow tests and builds all four
 targets, then publishes a GitHub Release only after all builds succeed. Run it
 manually from the Actions tab or push a version tag matching `Cargo.toml`, such
-as `v0.1.0`. A manual run creates that tag at the workflow's commit if needed.
+as `v0.1.1`. A manual run creates that tag at the workflow's commit if needed.
 Existing published releases or tags pointing at a different commit are not
 replaced: update `Cargo.toml` and `Cargo.lock` for the next release. Prerelease
 versions are marked as prereleases on GitHub. The README is uploaded once per
