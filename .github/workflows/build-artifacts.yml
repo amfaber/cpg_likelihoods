@@ -109,7 +109,9 @@ jobs:
             if [[ "$target" == *-windows-* ]]; then asset="$asset.exe"; fi
             test -s "$asset"
           done
-          existing_commit=$(gh api "repos/$GH_REPO/commits/$tag" --jq .sha 2>/dev/null || true)
+          # A failed gh request can write an error JSON body to stdout.
+          # Discard it rather than mistaking a missing tag for a commit ID.
+          existing_commit=$(gh api "repos/$GH_REPO/commits/$tag" --jq .sha 2>/dev/null) || existing_commit=''
           if [[ -n "$existing_commit" && "$existing_commit" != "$GITHUB_SHA" ]]; then
             echo "Tag $tag already points to a different commit; bump the package version." >&2
             exit 1
