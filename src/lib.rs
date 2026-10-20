@@ -373,11 +373,8 @@ pub fn append_pl_columns<P: AsRef<Path>>(
         let context = |error| format!("{}:{}: {error}", input_bed.as_ref().display(), index + 1);
         let line = line.map_err(|error| context(error.to_string()))?;
         let Some(record) = BedMethylRecord::parse(&line).map_err(context)? else {
-            writeln!(
-                writer,
-                "{}",
-                bedmethyl::append_pl_header(&line).map_err(context)?
-            )?;
+            bedmethyl::append_pl_header(&mut writer, &line)
+                .map_err(|error| context(error.to_string()))?;
             continue;
         };
         record
@@ -611,11 +608,8 @@ pub fn filter_bedmethyl_by_state<P: AsRef<Path>>(
         let context = |error| format!("{}:{}: {error}", input_bed.as_ref().display(), index + 1);
         let line = line.map_err(|error| context(error.to_string()))?;
         let Some(record) = BedMethylRecord::parse(&line).map_err(context)? else {
-            writeln!(
-                writer,
-                "{}",
-                bedmethyl::filter_pl_header(&line, keep_pl).map_err(context)?
-            )?;
+            bedmethyl::filter_pl_header(&mut writer, &line, keep_pl)
+                .map_err(|error| context(error.to_string()))?;
             continue;
         };
         let [pl_hom, pl_het, pl_non] = record.pl().map_err(context)?;
