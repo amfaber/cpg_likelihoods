@@ -47,7 +47,7 @@ flowchart LR
 - [Installation](#installation)
 - [Quickstart](#quickstart)
 - [Detailed usage](#detailed-usage)
-  - [Estimate error rate](#error_c2n-rate)
+  - [Estimate error rate](#estimate-error-rate)
     - [Example](#example-1)
   - [Calculate likelihoods](#calculate-likelihoods)
     - [Example](#example-2)
@@ -57,6 +57,31 @@ flowchart LR
 - [Notes](#notes)
 
 ## Installation
+
+### Prebuilt executables
+
+Download the executable for your platform from
+[GitHub Releases](https://github.com/amfaber/cpg_likelihoods/releases).
+Binaries are available for Windows (x86-64), Linux (x86-64), and macOS (Intel and
+Apple Silicon). Linux builds require glibc from Ubuntu 22.04 or newer.
+
+Rename the downloaded file to `cpg-likelihoods` (`cpg-likelihoods.exe` on Windows)
+and place it on your PATH. On Linux/macOS, give it executable permission:
+
+```sh
+chmod +x cpg-likelihoods
+```
+
+### cargo-binstall
+
+With [cargo-binstall](https://github.com/cargo-bins/cargo-binstall) installed:
+
+```sh
+cargo binstall --git https://github.com/amfaber/cpg_likelihoods cpg_likelihoods
+cpg-likelihoods --help
+```
+
+### Build from source
 
 This project is written in Rust and uses Cargo for building and running the tools.
 
@@ -93,48 +118,9 @@ or use Cargo to run them from the project root:
 cargo run -- error_c2n input.bedMethyl
 ```
 
-## Quickstart 
+Install the executable on your PATH with `cargo install --path . --locked`.
 
-### Prebuilt executables and cargo-binstall
-
-Download the executable for your platform from
-[GitHub Releases](https://github.com/amfaber/cpg_likelihoods/releases).
-Release assets are raw executables, without ZIP or tar wrappers:
-
-- `cpg-likelihoods-v0.1.1-x86_64-pc-windows-msvc.exe`
-- `cpg-likelihoods-v0.1.1-x86_64-unknown-linux-gnu`
-- `cpg-likelihoods-v0.1.1-x86_64-apple-darwin`
-- `cpg-likelihoods-v0.1.1-aarch64-apple-darwin`
-
-The README is a separate release asset, shared by all platforms. On Linux/macOS,
-mark a manually downloaded executable as executable with `chmod +x <filename>`
-and rename it to `cpg-likelihoods` when placing it on your PATH. Linux builds
-require x86-64 with glibc from Ubuntu 22.04 or newer.
-
-With [cargo-binstall](https://github.com/cargo-bins/cargo-binstall) installed:
-
-```sh
-cargo binstall --git https://github.com/amfaber/cpg_likelihoods cpg_likelihoods
-cpg-likelihoods --help
-```
-
-`--git` reads the manifest from this repository instead of crates.io. For a
-local checkout, pass the absolute path of `Cargo.toml` with `--manifest-path`.
-The package is named `cpg_likelihoods`; the installed executable is named
-`cpg-likelihoods`. The manifest's binstall metadata maps each Rust target to its
-raw executable (`pkg-fmt = "bin"`). Plain `cargo binstall cpg_likelihoods`
-requires this package/version and its metadata to be published on crates.io.
-
-The **Publish release binaries** Actions workflow tests and builds all four
-targets, then publishes a GitHub Release only after all builds succeed. Run it
-manually from the Actions tab or push a version tag matching `Cargo.toml`, such
-as `v0.1.1`. A manual run creates that tag at the workflow's commit if needed.
-Existing published releases or tags pointing at a different commit are not
-replaced: update `Cargo.toml` and `Cargo.lock` for the next release. Prerelease
-versions are marked as prereleases on GitHub. The README is uploaded once per
-release, separate from the executables.
-
-### Run the workflow locally
+## Quickstart
 
 ```bash
 #Estimate the CpG-to-non-CpG error rate: 
@@ -167,8 +153,6 @@ BGZF for `.bgz`/`.bgzf`, and plain text for other extensions.
 
 The workflow consists of four subcommands. Run `cpg-likelihoods --help` or
 `cpg-likelihoods <subcommand> --help` for usage.
-
-Install the single executable on your PATH with `cargo install --path . --locked`.
 
 ### Estimate error rate
 This step estimates the combined error rate for sequencing and mapping errors at CpG loci. The input is a `bedMethyl` file containing read-based pileup information for all candidate CpG sites. 
@@ -237,7 +221,7 @@ L({\mathrm{non-CpG}})=
 (1-\hat{\varepsilon})^{\ D_i}
 $$
 
-The optional `--n` parameter is retained as a common likelihood scale factor.
+The optional `--n` parameter is a common likelihood scale factor.
 It adds `(C_i + D_i) * log10(n)` to all three reported log-likelihoods and
 therefore cancels from normalized probabilities and PLs. It must be finite and
 positive. Error rates must be finite and between zero and one (inclusive).
