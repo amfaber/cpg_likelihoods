@@ -43,7 +43,11 @@ uses an independent decoder. Simply reading output with our own reader would
 miss a bug where both functions accepted plain text mislabeled as gzip.
 
 CI runs tests on Linux, macOS, and Windows for pushes and pull requests. The
-downloadable-build workflow runs separately on manual dispatch and version tags.
+release workflow runs separately on manual dispatch and version tags. It stages
+raw executable assets between jobs, then publishes them with a standalone README
+after all four builds pass. Published releases are not overwritten. The
+`repository` field in `Cargo.toml` and the README installation links must identify
+the repository hosting the releases; update them when adopting this fork upstream.
 When changing the package version, update both `Cargo.toml` and `Cargo.lock`
 before pushing the matching tag. CI checks software behavior; biological
 accuracy requires representative data with known CpG genotypes and a documented
