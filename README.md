@@ -61,7 +61,7 @@ flowchart LR
 ### Prebuilt executables
 
 Download the executable for your platform from
-[GitHub Releases](https://github.com/amfaber/cpg_likelihoods/releases).
+[GitHub Releases](https://github.com/SrenBlikdal/cpg_likelihoods/releases).
 Binaries are available for Windows (x86-64), Linux (x86-64), and macOS (Intel and
 Apple Silicon). Linux builds require glibc from Ubuntu 22.04 or newer.
 
@@ -77,7 +77,7 @@ chmod +x cpg-likelihoods
 With [cargo-binstall](https://github.com/cargo-bins/cargo-binstall) installed:
 
 ```sh
-cargo binstall --git https://github.com/amfaber/cpg_likelihoods cpg_likelihoods
+cargo binstall --git https://github.com/SrenBlikdal/cpg_likelihoods cpg_likelihoods
 cpg-likelihoods --help
 ```
 
