@@ -9,23 +9,17 @@ use cpg_likelihoods::{
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     match Cli::parse().command {
-        Command::ErrorC2n { input, estimation } => {
+        Command::ErrorC2n(args) => {
             let e = estimate_error_c2n_from_bedmethyl(
-                input,
-                estimation.min_cov,
-                estimation.max_cov,
-                estimation.min_ratio,
+                &args.input,
+                args.estimation.min_cov,
+                args.estimation.max_cov,
+                args.estimation.min_ratio,
             )?;
             println!("{e:.10}");
         }
-        Command::Likelihoods {
-            input,
-            out,
-            e_c2n,
-            estimation,
-            n,
-        } => {
-            let e = match e_c2n {
+        Command::Likelihoods(args) => {
+            let e = match args.e_c2n {
                 Some(e) => {
                     if !(0.0..=1.0).contains(&e) {
                         return Err("e_c2n must be between 0 and 1".into());
@@ -35,29 +29,29 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 None => {
                     let e = estimate_error_c2n_from_bedmethyl(
-                        &input,
-                        estimation.min_cov,
-                        estimation.max_cov,
-                        estimation.min_ratio,
+                        &args.input,
+                        args.estimation.min_cov,
+                        args.estimation.max_cov,
+                        args.estimation.min_ratio,
                     )?;
                     eprintln!("Estimated e_c2n = {e:.10}");
                     e
                 }
             };
-            append_pl_columns(&input, &out, e, n)?;
-            eprintln!("Wrote: {}", out.display());
+            append_pl_columns(&args.input, &args.out, e, args.n)?;
+            eprintln!("Wrote: {}", args.out.display());
         }
-        Command::SummarizeLikelihoods { input, min_gq } => {
-            summarize_likelihoods::run(&input, min_gq)?
+        Command::SummarizeLikelihoods(args) => {
+            summarize_likelihoods::run(&args.input, args.min_gq)?
         }
-        Command::FilterLikelihoods {
-            input_bed,
-            output_bed,
-            state,
-            min_gq,
-            keep_pl,
-        } => {
-            filter_bedmethyl_by_state(&input_bed, &output_bed, state, min_gq, keep_pl)?;
+        Command::FilterLikelihoods(args) => {
+            filter_bedmethyl_by_state(
+                &args.input_bed,
+                &args.output_bed,
+                args.state,
+                args.min_gq,
+                args.keep_pl,
+            )?;
         }
     }
     Ok(())
