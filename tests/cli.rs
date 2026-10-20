@@ -27,7 +27,7 @@ fn four_subcommands_complete_a_workflow() {
     let filtered = scratch.path("filtered.bed");
     write_input(&input);
 
-    let estimate = success(cli(&["estimate-error".as_ref(), input.as_os_str()]));
+    let estimate = success(cli(&["error_c2n".as_ref(), input.as_os_str()]));
     let estimate: f64 = estimate.trim().parse().unwrap();
     assert!((estimate - 2.0 / 32.0).abs() < 1e-9);
 
@@ -37,13 +37,17 @@ fn four_subcommands_complete_a_workflow() {
         "--out".as_ref(),
         annotated.as_os_str(),
     ]));
-    let report = success(cli(&["summarize".as_ref(), annotated.as_os_str()]));
+    let report = success(cli(&[
+        "summarize_likelihoods".as_ref(),
+        annotated.as_os_str(),
+    ]));
     assert!(report.contains("Total loci: 3"));
 
     success(cli(&[
-        "filter".as_ref(),
+        "filter_likelihoods".as_ref(),
+        "--input-bed".as_ref(),
         annotated.as_os_str(),
-        "--out".as_ref(),
+        "--output-bed".as_ref(),
         filtered.as_os_str(),
         "--state".as_ref(),
         "CpG_hom/het".as_ref(),
@@ -56,9 +60,14 @@ fn four_subcommands_complete_a_workflow() {
 #[test]
 fn help_lists_subcommands_and_missing_arguments_fail() {
     let help = success(cli(&["--help".as_ref()]));
-    for name in ["estimate-error", "likelihoods", "summarize", "filter"] {
+    for name in [
+        "error_c2n",
+        "likelihoods",
+        "summarize_likelihoods",
+        "filter_likelihoods",
+    ] {
         assert!(help.contains(name));
         success(cli(&[name.as_ref(), "--help".as_ref()]));
     }
-    assert!(!cli(&["filter".as_ref()]).status.success());
+    assert!(!cli(&["filter_likelihoods".as_ref()]).status.success());
 }

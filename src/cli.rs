@@ -16,7 +16,8 @@ pub struct Cli {
 #[derive(Debug, Subcommand)]
 pub enum Command {
     /// Estimate the CpG-to-non-CpG error rate
-    EstimateError {
+    #[command(name = "error_c2n")]
+    ErrorC2n {
         /// Input bedMethyl file (plain, gzip, or BGZF)
         input: PathBuf,
         #[command(flatten)]
@@ -39,16 +40,19 @@ pub enum Command {
         n: f64,
     },
     /// Summarize CpG states from a PL-annotated bedMethyl file
-    Summarize {
+    #[command(name = "summarize_likelihoods")]
+    SummarizeLikelihoods {
         input: PathBuf,
         #[arg(long, default_value_t = 20)]
         min_gq: u32,
     },
     /// Filter a PL-annotated bedMethyl file by CpG state
-    Filter {
-        input: PathBuf,
+    #[command(name = "filter_likelihoods")]
+    FilterLikelihoods {
         #[arg(long)]
-        out: PathBuf,
+        input_bed: PathBuf,
+        #[arg(long)]
+        output_bed: PathBuf,
         /// CpG_hom, CpG_het, non-CpG, or CpG_hom/het
         #[arg(long)]
         state: FilterState,

@@ -5,10 +5,10 @@ Single-molecule sequencing is readily adapted for the analysis of epigenetic DNA
 flowchart LR
     %% Tool nodes
     T1["modkit pileup"]
-    T2["estimate-error"]
+    T2["error_c2n"]
     T3["likelihoods"]
-    T4["summarize"]
-    T5["filter"]
+    T4["summarize_likelihoods"]
+    T5["filter_likelihoods"]
 
     %% File nodes
     F1["bedMethyl input<br/>.bedMethyl(.bgz/.gz)"]
@@ -47,7 +47,7 @@ flowchart LR
 - [Installation](#installation)
 - [Quickstart](#quickstart)
 - [Detailed usage](#detailed-usage)
-  - [Estimate error rate](#estimate-error-rate)
+  - [Estimate error rate](#error_c2n-rate)
     - [Example](#example-1)
   - [Calculate likelihoods](#calculate-likelihoods)
     - [Example](#example-2)
@@ -84,13 +84,13 @@ ls target/release/
 You can then run the subcommands directly, for example:
 
 ```bash
-./target/release/cpg-likelihoods estimate-error input.bedMethyl
+./target/release/cpg-likelihoods error_c2n input.bedMethyl
 ```
 
 or use Cargo to run them from the project root:
 
 ```bash
-cargo run -- estimate-error input.bedMethyl
+cargo run -- error_c2n input.bedMethyl
 ```
 
 ## Quickstart 
@@ -138,16 +138,16 @@ release, separate from the executables.
 
 ```bash
 #Estimate the CpG-to-non-CpG error rate: 
-cargo run -- estimate-error input.bedMethyl
+cargo run -- error_c2n input.bedMethyl
 
 #Calculate likelihoods and append PL columns to the bedMethyl file: 
 cargo run -- likelihoods input.bedMethyl --out output.bedMethyl
 
 #Summarize the CpG states in the bedMethyl  
-cargo run -- summarize output.bedMethyl --min-gq 20
+cargo run -- summarize_likelihoods output.bedMethyl --min-gq 20
 
 #Filter for homozygous/heterozygous CpG loci and remove PL columns:
-cargo run -- filter output.bedMethyl --out filtered.bedMethyl --state CpG_hom/het --min-gq 20
+cargo run -- filter_likelihoods --input-bed output.bedMethyl --output-bed filtered.bedMethyl --state CpG_hom/het --min-gq 20
 ```
 
 ## Detailed usage 
@@ -365,7 +365,7 @@ To filter a bedMethyl file after likelihood calculations we can use the filter l
 
 #### Example 4
 
-cpg-likelihoods filter output.bedMethyl --out filtered.bedMethyl --state CpG_hom/het --min-gq 20
+cpg-likelihoods filter_likelihoods --input-bed output.bedMethyl --output-bed filtered.bedMethyl --state CpG_hom/het --min-gq 20
 
 | chrom | start | end | ... | N_valid_cov | N_delete | N_diff | N_nocall
 | --- | --- | --- | --- | --- | --- | --- | --- |

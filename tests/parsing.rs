@@ -46,18 +46,19 @@ fn mixed_delimiters_work_through_every_command() {
         .collect::<String>();
     std::fs::write(&input, mixed).unwrap();
     for args in [
-        vec!["estimate-error".as_ref(), input.as_os_str()],
+        vec!["error_c2n".as_ref(), input.as_os_str()],
         vec![
             "likelihoods".as_ref(),
             input.as_os_str(),
             "--out".as_ref(),
             annotated.as_os_str(),
         ],
-        vec!["summarize".as_ref(), annotated.as_os_str()],
+        vec!["summarize_likelihoods".as_ref(), annotated.as_os_str()],
         vec![
-            "filter".as_ref(),
+            "filter_likelihoods".as_ref(),
+            "--input-bed".as_ref(),
             annotated.as_os_str(),
-            "--out".as_ref(),
+            "--output-bed".as_ref(),
             filtered.as_os_str(),
             "--state".as_ref(),
             "homhet".as_ref(),
@@ -88,7 +89,7 @@ fn malformed_data_fails_with_path_and_line_number_in_all_commands() {
     let out = scratch.path("output.bed");
     std::fs::write(&input, "# a comment\nchr1\tbroken\n").unwrap();
     for args in [
-        vec!["estimate-error".as_ref(), input.as_os_str()],
+        vec!["error_c2n".as_ref(), input.as_os_str()],
         vec![
             "likelihoods".as_ref(),
             input.as_os_str(),
@@ -97,11 +98,12 @@ fn malformed_data_fails_with_path_and_line_number_in_all_commands() {
             "--e-c2n".as_ref(),
             "0.03".as_ref(),
         ],
-        vec!["summarize".as_ref(), input.as_os_str()],
+        vec!["summarize_likelihoods".as_ref(), input.as_os_str()],
         vec![
-            "filter".as_ref(),
+            "filter_likelihoods".as_ref(),
+            "--input-bed".as_ref(),
             input.as_os_str(),
-            "--out".as_ref(),
+            "--output-bed".as_ref(),
             out.as_os_str(),
             "--state".as_ref(),
             "homhet".as_ref(),

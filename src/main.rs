@@ -1,5 +1,5 @@
 mod cli;
-mod summary;
+mod summarize_likelihoods;
 
 use clap::Parser;
 use cli::{Cli, Command};
@@ -9,7 +9,7 @@ use cpg_likelihoods::{
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     match Cli::parse().command {
-        Command::EstimateError { input, estimation } => {
+        Command::ErrorC2n { input, estimation } => {
             let e = estimate_error_c2n_from_bedmethyl(
                 input,
                 estimation.min_cov,
@@ -47,15 +47,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             append_pl_columns(&input, &out, e, n)?;
             eprintln!("Wrote: {}", out.display());
         }
-        Command::Summarize { input, min_gq } => summary::run(&input, min_gq)?,
-        Command::Filter {
-            input,
-            out,
+        Command::SummarizeLikelihoods { input, min_gq } => {
+            summarize_likelihoods::run(&input, min_gq)?
+        }
+        Command::FilterLikelihoods {
+            input_bed,
+            output_bed,
             state,
             min_gq,
             keep_pl,
         } => {
-            filter_bedmethyl_by_state(&input, &out, state, min_gq, keep_pl)?;
+            filter_bedmethyl_by_state(&input_bed, &output_bed, state, min_gq, keep_pl)?;
         }
     }
     Ok(())
